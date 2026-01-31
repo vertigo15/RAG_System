@@ -119,3 +119,73 @@ export interface HealthStatus {
   rabbitmq: string;
   qdrant: string;
 }
+
+// Additional Query Types
+export interface QueryRequest {
+  query_text: string;
+  debug_mode: boolean;
+  document_filter?: string[];
+  settings?: Partial<Settings>;
+}
+
+export interface QueryResponse extends Query {}
+
+export interface Chunk extends DocumentChunk {
+  doc_id: string;
+  chunk_index: number;
+  content: string;
+  parent_section: string;
+  hierarchy_path: string;
+  language: string;
+  node_type: 'paragraph' | 'table' | 'image_description' | 'heading';
+  page_number?: number;
+}
+
+export interface ChunkResult extends ChunkSummary {
+  source: string;
+  preview: string;
+  score_change?: number;
+}
+
+export interface TimingBreakdown extends Timing {}
+
+export interface IterationDebug extends Iteration {}
+
+// System Status Types
+export interface SystemStatus {
+  services: ServiceStatus[];
+  timestamp: string;
+}
+
+export interface ServiceStatus {
+  name: string;
+  status: 'connected' | 'disconnected' | 'degraded';
+  details?: string;
+  latency_ms?: number;
+  vector_count?: number;
+  pending_jobs?: number;
+}
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
+  error?: string;
+  message?: string;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+// Upload Types
+export interface UploadProgress {
+  file: File;
+  progress: number;
+  status: 'pending' | 'uploading' | 'completed' | 'failed';
+  error?: string;
+}
