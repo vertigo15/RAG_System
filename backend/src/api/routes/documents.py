@@ -73,6 +73,18 @@ async def get_document(
     return DocumentResponse.model_validate(document)
 
 
+@router.get("/{document_id}/chunks", response_model=ChunksResponse)
+async def get_document_chunks(
+    document_id: UUID,
+    service: DocumentService = Depends(get_document_service)
+):
+    """Get all chunks for a document."""
+    # This will be implemented with Qdrant integration
+    # For now, return empty list
+    from src.models.schemas import ChunksResponse
+    return ChunksResponse(chunks=[], total=0)
+
+
 @router.delete("/{document_id}")
 async def delete_document(
     document_id: UUID,
