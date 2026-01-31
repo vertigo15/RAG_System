@@ -106,7 +106,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         client_key = self._get_client_key(request)
         
         # Check per-minute limit
-        async with self.get_db_session() as session:
+        async for session in self.get_db_session():
             is_allowed, remaining, reset_time = await self.rate_limiter.check_rate_limit(
                 session=session,
                 key=f"{client_key}:minute",
@@ -114,6 +114,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 max_requests=self.rate_limiter.config.requests_per_minute
             )
             await session.commit()
+            break
         
         if not is_allowed:
             raise HTTPException(

@@ -12,7 +12,8 @@ from src.services.queue_service import QueueService
 from src.api.middleware.logging import LoggingMiddleware
 from src.api.middleware.error_handler import ErrorHandlerMiddleware
 from src.api.middleware.rate_limit import RateLimitMiddleware, PostgresRateLimiter, RateLimitConfig
-from src.api.routes import health
+from src.api.routes import health, documents, queries
+from src.api.routes import settings as settings_router
 import src.dependencies as deps
 
 settings = get_settings()
@@ -80,6 +81,9 @@ app.add_middleware(LoggingMiddleware)
 
 # Include routers
 app.include_router(health.router, tags=["Health"])
+app.include_router(documents.router, tags=["Documents"])
+app.include_router(queries.router, tags=["Queries"])
+app.include_router(settings_router.router, tags=["Settings"])
 
 @app.get("/")
 async def root():
