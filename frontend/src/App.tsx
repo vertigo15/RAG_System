@@ -4,6 +4,7 @@ import { Settings as SettingsIcon, FileText, MessageSquare } from 'lucide-react'
 import Settings from './pages/Settings';
 import Documents from './pages/Documents';
 import Query from './pages/Query';
+import { ToastContainer } from './components/common/Toast';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
+          <ToastContainer />
         </div>
       </BrowserRouter>
     </QueryClientProvider>
