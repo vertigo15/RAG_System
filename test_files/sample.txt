@@ -1,0 +1,29 @@
+RAG System Test Document
+
+This is a plain text file for testing the RAG system's ability to process TXT files.
+
+Introduction
+The RAG (Retrieval Augmented Generation) system is designed to index and search through various document types. This test file will verify that plain text files are properly processed.
+
+Features
+- Text extraction
+- Paragraph detection
+- Semantic chunking
+- Vector embedding generation
+
+Technical Details
+Plain text files are the simplest format to process. They don't require OCR or complex layout analysis. The system should:
+1. Read the file with UTF-8 encoding
+2. Split content into paragraphs
+3. Generate embeddings for each chunk
+4. Store in Qdrant vector database
+
+Multilingual Support
+שלום! This text contains Hebrew.
+مرحبا! This text contains Arabic.
+Hello! This text contains English.
+
+The language detection system should identify multiple languages within the same document.
+
+Conclusion
+If you can see this text in the RAG system after upload, the TXT file processing is working correctly!

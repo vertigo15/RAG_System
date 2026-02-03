@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     # PostgreSQL
     postgres_host: str = os.getenv("POSTGRES_HOST", "postgres")
-    postgres_port: int = int(os.getenv("POSTGRES_PORT", "5433"))
+    postgres_port: int = int(os.getenv("POSTGRES_PORT", "5432"))
     postgres_db: str = os.getenv("POSTGRES_DB", "rag_system")
     postgres_user: str = os.getenv("POSTGRES_USER", "admin")
     postgres_password: str = os.getenv("POSTGRES_PASSWORD", "admin")
@@ -24,9 +24,9 @@ class Settings(BaseSettings):
     
     # Azure OpenAI
     azure_openai_endpoint: str = os.getenv("AZURE_OPENAI_ENDPOINT", "")
-    azure_openai_key: str = os.getenv("AZURE_OPENAI_KEY", "")
-    azure_openai_deployment_gpt4: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_GPT4", "gpt-4")
-    azure_openai_deployment_embed: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_EMBED", "text-embedding-3-large")
+    azure_openai_api_key: str = os.getenv("AZURE_OPENAI_API_KEY", "")
+    azure_llm_deployment: str = os.getenv("AZURE_LLM_DEPLOYMENT", "gpt-4")
+    azure_embedding_deployment: str = os.getenv("AZURE_EMBEDDING_DEPLOYMENT", "text-embedding-3-large")
     azure_openai_api_version: str = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01")
     
     # Azure Document Intelligence
@@ -37,6 +37,13 @@ class Settings(BaseSettings):
     chunk_size: int = int(os.getenv("CHUNK_SIZE", "512"))
     chunk_overlap: int = int(os.getenv("CHUNK_OVERLAP", "50"))
     embedding_dimension: int = 3072
+    
+    # Summarization Settings
+    summarizer_short_doc_threshold: int = int(os.getenv("SUMMARIZER_SHORT_DOC_THRESHOLD", "12000"))
+    summarizer_max_section_size: int = int(os.getenv("SUMMARIZER_MAX_SECTION_SIZE", "15000"))
+    summarizer_min_section_size: int = int(os.getenv("SUMMARIZER_MIN_SECTION_SIZE", "500"))
+    summarizer_temperature: float = float(os.getenv("SUMMARIZER_TEMPERATURE", "0.3"))
+    summarizer_max_concurrent: int = int(os.getenv("SUMMARIZER_MAX_CONCURRENT", "5"))
     
     @property
     def postgres_url(self) -> str:

@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, List
+from .language_detector import LanguageDetector
 
 logger = logging.getLogger(__name__)
 
@@ -9,6 +10,7 @@ class Chunker:
     def __init__(self, chunk_size: int = 512, chunk_overlap: int = 50):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        self.language_detector = LanguageDetector()
     
     def chunk_document(self, tree: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -34,12 +36,19 @@ class Chunker:
             # Find which section this chunk belongs to
             section_title = self._find_section(chunk_text, sections)
             
+            # Analyze language composition
+            lang_info = self.language_detector.analyze_chunk_language(chunk_text)
+            
             chunks.append({
                 "chunk_id": f"chunk_{idx}",
                 "text": chunk_text,
                 "type": "text_chunk",
                 "section": section_title,
                 "position": idx,
+                "language": lang_info['primary_language'],
+                "is_multilingual": lang_info['is_multilingual'],
+                "languages": lang_info['languages'],
+                "language_distribution": lang_info['distribution'],
                 "metadata": {
                     "chunk_size": len(chunk_text.split()),
                     "total_chunks": len(text_chunks)

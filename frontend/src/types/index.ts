@@ -1,14 +1,21 @@
 export interface Document {
   id: string;
   filename: string;
-  file_path: string;
-  file_size: number;
-  file_type: string;
+  file_size_bytes: number;
+  mime_type: string | null;
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  chunk_count: number | null;
-  error_message: string | null;
   uploaded_at: string;
-  processed_at: string | null;
+  processing_started_at: string | null;
+  processing_completed_at: string | null;
+  processing_time_seconds: number | null;
+  chunk_count: number;
+  vector_count: number;
+  qa_pairs_count: number;
+  detected_languages: string[] | null;
+  summary: string | null;
+  tags: string[] | null;
+  error_message: string | null;
+  created_at: string;
   updated_at: string;
 }
 
@@ -33,6 +40,9 @@ export interface Query {
   created_at: string;
   completed_at: string | null;
   updated_at: string;
+  confidence_score?: number;
+  total_time_ms?: number;
+  iteration_count?: number;
 }
 
 export interface Citation {
@@ -41,6 +51,8 @@ export interface Citation {
   section: string;
   document_id: string;
   type: string;
+  document_name?: string;
+  page_number?: number;
 }
 
 export interface DebugData {
@@ -111,6 +123,8 @@ export interface Settings {
   reranking_top_k: number;
   rrf_k: number;
   agent_max_iterations: number;
+  enable_hybrid_search?: boolean;
+  enable_qa_matching?: boolean;
 }
 
 export interface HealthStatus {
@@ -118,6 +132,7 @@ export interface HealthStatus {
   database: string;
   rabbitmq: string;
   qdrant: string;
+  services?: ServiceStatus[];
 }
 
 // Additional Query Types

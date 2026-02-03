@@ -165,7 +165,7 @@ export default function Query() {
                       <div>
                         <span className="font-medium text-gray-700">Duration: </span>
                         <span className="text-gray-600">
-                          {formatDuration(iteration.duration_ms)}
+                          {formatDuration(iteration.timing?.total_ms || 0)}
                         </span>
                       </div>
                     </div>

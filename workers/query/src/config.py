@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     # PostgreSQL
     postgres_host: str = os.getenv("POSTGRES_HOST", "postgres")
-    postgres_port: int = int(os.getenv("POSTGRES_PORT", "5433"))
+    postgres_port: int = int(os.getenv("POSTGRES_PORT", "5432"))
     postgres_db: str = os.getenv("POSTGRES_DB", "rag_system")
     postgres_user: str = os.getenv("POSTGRES_USER", "admin")
     postgres_password: str = os.getenv("POSTGRES_PASSWORD", "admin")

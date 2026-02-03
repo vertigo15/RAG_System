@@ -105,6 +105,8 @@ class SettingsUpdate(BaseModel):
     max_agent_iterations: Optional[int] = Field(None, ge=1, le=10)
     chunk_size: Optional[int] = Field(None, ge=100, le=2000)
     chunk_overlap: Optional[int] = Field(None, ge=0, le=500)
+    enable_hybrid_search: Optional[bool] = None
+    enable_qa_matching: Optional[bool] = None
 
 
 class SettingsResponse(BaseModel):
@@ -120,6 +122,8 @@ class SettingsResponse(BaseModel):
     max_agent_iterations: int
     chunk_size: int
     chunk_overlap: int
+    enable_hybrid_search: bool = True
+    enable_qa_matching: bool = True
 
 
 # Health check schemas

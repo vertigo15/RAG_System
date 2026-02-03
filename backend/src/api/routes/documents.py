@@ -6,10 +6,11 @@ from uuid import UUID
 from typing import Optional
 from fastapi import APIRouter, Depends, UploadFile, File, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.models.schemas import DocumentUploadResponse, DocumentResponse, DocumentListResponse
+from src.models.schemas import DocumentUploadResponse, DocumentResponse, DocumentListResponse, ChunksResponse
 from src.models.enums import DocumentStatus
 from src.services.document_service import DocumentService
 from src.services.queue_service import QueueService
+from src.services.qdrant_service import QdrantService
 from src.repositories.document_repository import DocumentRepository
 from src.dependencies import get_db_session, get_queue_service
 from src.core.logging import get_logger
@@ -35,7 +36,7 @@ async def upload_document(
     """
     Upload a document for processing.
     
-    Supported formats: PDF, DOCX, PPTX, PNG, JPEG, TXT
+    Supported formats: PDF, DOC, DOCX, PPTX, PNG, JPEG, TXT, MD, JSON
     """
     document = await service.upload_document(file)
     
@@ -78,11 +79,27 @@ async def get_document_chunks(
     document_id: UUID,
     service: DocumentService = Depends(get_document_service)
 ):
-    """Get all chunks for a document."""
-    # This will be implemented with Qdrant integration
-    # For now, return empty list
-    from src.models.schemas import ChunksResponse
-    return ChunksResponse(chunks=[], total=0)
+    """Get all chunks for a document from Qdrant."""
+    qdrant_service = QdrantService()
+    chunks_data = await qdrant_service.get_document_chunks(document_id)
+    
+    from src.models.schemas import ChunkResponse
+    chunks = [
+        ChunkResponse(
+            id=chunk["id"],
+            content=chunk["content"],
+            doc_id=chunk["doc_id"],
+            hierarchy_path=chunk.get("section"),
+            score=None,
+            metadata={
+                **chunk.get("metadata", {}),
+                "type": chunk.get("type", "text_chunk")
+            }
+        )
+        for chunk in chunks_data
+    ]
+    
+    return ChunksResponse(chunks=chunks, total=len(chunks))
 
 
 @router.delete("/{document_id}")

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { Document, DocumentChunk, Query, Settings, HealthStatus } from '../types';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
@@ -13,7 +13,8 @@ export const healthApi = {
 };
 
 export const documentsApi = {
-  getAll: () => api.get<Document[]>('/documents'),
+  getAll: (options?: { status?: string; limit?: number; offset?: number }) =>
+    api.get('/documents', { params: options }),
   getById: (id: string) => api.get<Document>(`/documents/${id}`),
   getChunks: (id: string) => api.get<DocumentChunk[]>(`/documents/${id}/chunks`),
   upload: (file: File) => {

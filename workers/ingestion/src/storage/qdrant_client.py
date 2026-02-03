@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import List, Dict, Any
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
@@ -57,16 +58,24 @@ class QdrantStorage:
                 logger.warning(f"Chunk {idx} has no embedding, skipping")
                 continue
             
+            # Generate a valid UUID for the point ID
+            point_id = str(uuid.uuid4())
+            
             point = PointStruct(
-                id=f"{document_id}_{chunk.get('chunk_id', idx)}",
+                id=point_id,
                 vector=embedding,
                 payload={
                     "document_id": document_id,
                     "chunk_id": chunk.get("chunk_id"),
+                    "chunk_index": idx,
                     "text": chunk.get("text", ""),
                     "type": chunk.get("type", "text_chunk"),
                     "section": chunk.get("section", ""),
                     "position": chunk.get("position", 0),
+                    "language": chunk.get("language", "unknown"),
+                    "is_multilingual": chunk.get("is_multilingual", False),
+                    "languages": chunk.get("languages", []),
+                    "language_distribution": chunk.get("language_distribution", {}),
                     "metadata": chunk.get("metadata", {})
                 }
             )

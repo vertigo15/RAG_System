@@ -1,6 +1,7 @@
 import logging
+import asyncio
 import asyncpg
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -12,11 +13,20 @@ class PostgresStorage:
         self.connection_string = connection_string
         self.pool: Optional[asyncpg.Pool] = None
     
-    async def connect(self):
-        """Create connection pool"""
+    async def connect(self, max_retries: int = 5, retry_delay: int = 2):
+        """Create connection pool with retry logic"""
         if not self.pool:
-            self.pool = await asyncpg.create_pool(self.connection_string)
-            logger.info("Connected to PostgreSQL")
+            for attempt in range(max_retries):
+                try:
+                    self.pool = await asyncpg.create_pool(self.connection_string)
+                    logger.info("Connected to PostgreSQL")
+                    return
+                except Exception as e:
+                    logger.warning(f"Failed to connect to PostgreSQL (attempt {attempt + 1}/{max_retries}): {e}")
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(retry_delay)
+                    else:
+                        raise
     
     async def close(self):
         """Close connection pool"""
@@ -29,9 +39,14 @@ class PostgresStorage:
         document_id: str,
         status: str,
         error_message: Optional[str] = None,
-        chunk_count: Optional[int] = None
+        chunk_count: Optional[int] = None,
+        summary: Optional[str] = None,
+        detected_languages: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+        vector_count: Optional[int] = None,
+        qa_pairs_count: Optional[int] = None
     ):
-        """Update document processing status"""
+        """Update document processing status and metadata"""
         if not self.pool:
             await self.connect()
         
@@ -42,9 +57,14 @@ class PostgresStorage:
                     SET status = $1,
                         error_message = $2,
                         chunk_count = COALESCE($3, chunk_count),
-                        processed_at = $4,
-                        updated_at = $4
-                    WHERE id = $5
+                        processing_completed_at = $4,
+                        updated_at = $4,
+                        summary = COALESCE($5, summary),
+                        detected_languages = COALESCE($6, detected_languages),
+                        tags = COALESCE($7, tags),
+                        vector_count = COALESCE($8, vector_count),
+                        qa_pairs_count = COALESCE($9, qa_pairs_count)
+                    WHERE id = $10
                 """
                 
                 await conn.execute(
@@ -53,6 +73,11 @@ class PostgresStorage:
                     error_message,
                     chunk_count,
                     datetime.utcnow(),
+                    summary,
+                    detected_languages,
+                    tags,
+                    vector_count,
+                    qa_pairs_count,
                     document_id
                 )
                 
@@ -83,4 +108,22 @@ class PostgresStorage:
         
         except Exception as e:
             logger.error(f"Failed to get document info: {e}")
+            return None
+    
+    async def get_setting(self, key: str) -> Optional[dict]:
+        """Get setting value from database"""
+        if not self.pool:
+            await self.connect()
+        
+        try:
+            async with self.pool.acquire() as conn:
+                query = "SELECT value FROM settings WHERE key = $1"
+                row = await conn.fetchrow(query, key)
+                
+                if row:
+                    return row['value']
+                return None
+        
+        except Exception as e:
+            logger.error(f"Failed to get setting {key}: {e}")
             return None

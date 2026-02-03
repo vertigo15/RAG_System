@@ -1,0 +1,21 @@
+"""
+Prompts package for document processing.
+"""
+
+from .summary_prompts import (
+    SECTION_SUMMARY_SYSTEM,
+    SECTION_SUMMARY_USER,
+    FINAL_SUMMARY_SYSTEM,
+    FINAL_SUMMARY_USER,
+    SHORT_DOC_SUMMARY_SYSTEM,
+    SHORT_DOC_SUMMARY_USER
+)
+
+__all__ = [
+    'SECTION_SUMMARY_SYSTEM',
+    'SECTION_SUMMARY_USER',
+    'FINAL_SUMMARY_SYSTEM',
+    'FINAL_SUMMARY_USER',
+    'SHORT_DOC_SUMMARY_SYSTEM',
+    'SHORT_DOC_SUMMARY_USER',
+]

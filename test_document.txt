@@ -1,0 +1,1 @@
+This is a test document for the RAG system. It contains important information about testing the two-phase ingestion pipeline with document processor and chunking services.

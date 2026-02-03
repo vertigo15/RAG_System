@@ -1,4 +1,3 @@
-import React from 'react';
 import { ServiceStatus } from '../../types';
 import { SERVICE_STATUS_COLORS, SERVICE_STATUS_ICONS } from '../../utils/constants';
 

@@ -259,10 +259,10 @@ class QueryConsumer:
         await channel.set_qos(prefetch_count=1)
         
         # Declare queue
-        queue = await channel.declare_queue("query_processing", durable=True)
+        queue = await channel.declare_queue("query_queue", durable=True)
         
         # Start consuming
-        logger.info("Waiting for messages from query_processing queue")
+        logger.info("Waiting for messages from query_queue queue")
         await queue.consume(self.on_message)
         
         # Keep running

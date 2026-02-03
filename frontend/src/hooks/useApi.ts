@@ -56,13 +56,13 @@ export const useDeleteDocument = () => {
 };
 
 // Queries
-export const useQuery = (id: string) => {
+export const useQueryById = (id: string) => {
   return useQuery({
     queryKey: ['queries', id],
     queryFn: () => queriesApi.getById(id).then(res => res.data),
     enabled: !!id,
-    refetchInterval: (data) => {
-      if (data?.status === 'pending' || data?.status === 'processing') {
+    refetchInterval: (query: any) => {
+      if (query?.status === 'pending' || query?.status === 'processing') {
         return 2000; // Poll every 2s while processing
       }
       return false;

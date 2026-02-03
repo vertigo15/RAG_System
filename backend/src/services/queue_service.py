@@ -41,6 +41,19 @@ class QueueService:
             await self.connection.close()
             logger.info("RabbitMQ connection closed")
     
+    async def get_queue_message_count(self, queue_name: str) -> int:
+        """Get the number of pending messages in a queue."""
+        if not self.channel:
+            raise QueueError("Not connected to RabbitMQ", queue_name)
+        
+        try:
+            # Re-declare queue passively to get fresh statistics
+            queue = await self.channel.declare_queue(queue_name, durable=True, passive=False)
+            return queue.declaration_result.message_count
+        except Exception as e:
+            logger.exception("Failed to get queue message count", queue=queue_name)
+            return 0
+    
     async def publish_ingestion_job(
         self,
         document_id: str,

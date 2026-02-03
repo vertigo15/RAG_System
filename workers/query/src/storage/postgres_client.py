@@ -1,4 +1,5 @@
 import logging
+import asyncio
 import asyncpg
 import json
 from typing import Optional
@@ -13,11 +14,20 @@ class PostgresStorage:
         self.connection_string = connection_string
         self.pool: Optional[asyncpg.Pool] = None
     
-    async def connect(self):
-        """Create connection pool"""
+    async def connect(self, max_retries: int = 5, retry_delay: int = 2):
+        """Create connection pool with retry logic"""
         if not self.pool:
-            self.pool = await asyncpg.create_pool(self.connection_string)
-            logger.info("Connected to PostgreSQL")
+            for attempt in range(max_retries):
+                try:
+                    self.pool = await asyncpg.create_pool(self.connection_string)
+                    logger.info("Connected to PostgreSQL")
+                    return
+                except Exception as e:
+                    logger.warning(f"Failed to connect to PostgreSQL (attempt {attempt + 1}/{max_retries}): {e}")
+                    if attempt < max_retries - 1:
+                        await asyncio.sleep(retry_delay)
+                    else:
+                        raise
     
     async def close(self):
         """Close connection pool"""

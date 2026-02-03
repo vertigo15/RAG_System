@@ -10,6 +10,7 @@ from pathlib import Path
 from fastapi import UploadFile
 from src.repositories.document_repository import DocumentRepository
 from src.services.queue_service import QueueService
+from src.services.qdrant_service import QdrantService
 from src.models.database import Document
 from src.models.enums import DocumentStatus
 from src.core.logging import get_logger
@@ -106,6 +107,13 @@ class DocumentService:
             document_id: Document ID
         """
         document = await self.document_repo.get_by_id(document_id)
+        
+        # Delete chunks from Qdrant
+        try:
+            qdrant_service = QdrantService()
+            await qdrant_service.delete_document_chunks(document_id)
+        except Exception as e:
+            logger.warning("Failed to delete chunks from Qdrant", error=str(e))
         
         # Delete file
         file_pattern = f"{document_id}_*"

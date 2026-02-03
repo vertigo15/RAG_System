@@ -4,6 +4,10 @@ aio-pika==9.3.1
 # Database
 asyncpg==0.29.0
 
+# Pydantic
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
 # Qdrant
 qdrant-client==1.7.3
 
@@ -13,3 +17,4 @@ openai==1.10.0
 # Utilities
 python-dotenv==1.0.0
 rank-bm25==0.2.2
+httpx==0.24.1

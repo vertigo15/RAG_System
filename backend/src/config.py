@@ -74,6 +74,8 @@ class Settings(BaseSettings):
     max_agent_iterations: int = 3
     chunk_size: int = 512
     chunk_overlap: int = 50
+    enable_hybrid_search: bool = True
+    enable_qa_matching: bool = True
     
     class Config:
         env_file = ".env"

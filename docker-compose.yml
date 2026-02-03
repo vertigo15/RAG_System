@@ -51,6 +51,28 @@ services:
     networks:
       - rag-network
 
+  minio:
+    image: minio/minio:latest
+    container_name: rag-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - minio_data:/data
+      - ./init-minio.sh:/docker-entrypoint-initdb.d/init-minio.sh
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - rag-network
+
   backend:
     build: ./backend
     container_name: rag-backend
@@ -111,6 +133,7 @@ services:
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-01}
       - AZURE_EMBEDDING_DEPLOYMENT=${AZURE_EMBEDDING_DEPLOYMENT:-text-embedding-3-large}
       - AZURE_LLM_DEPLOYMENT=${AZURE_LLM_DEPLOYMENT:-gpt-4}
       - AZURE_DOC_INTELLIGENCE_ENDPOINT=${AZURE_DOC_INTELLIGENCE_ENDPOINT}
@@ -123,9 +146,94 @@ services:
       postgres:
         condition: service_healthy
       qdrant:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+  document-processor:
+    build:
+      context: .
+      dockerfile: services/document-processor/Dockerfile
+    container_name: rag-document-processor
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_JSON=true
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-rag_system}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+      - MINIO_HOST=minio
+      - MINIO_PORT=9000
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - MINIO_BUCKET=${MINIO_BUCKET:-documents}
+      - MINIO_SECURE=false
+      - AZURE_DOC_INTELLIGENCE_ENDPOINT=${AZURE_DOC_INTELLIGENCE_ENDPOINT}
+      - AZURE_DOC_INTELLIGENCE_KEY=${AZURE_DOC_INTELLIGENCE_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-01}
+      - AZURE_LLM_DEPLOYMENT=${AZURE_LLM_DEPLOYMENT:-gpt-4}
+    volumes:
+      - upload_data:/app/uploads
+    depends_on:
+      postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+  chunking-service:
+    build:
+      context: .
+      dockerfile: services/chunking-service/Dockerfile
+    container_name: rag-chunking-service
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_JSON=true
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-rag_system}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+      - MINIO_HOST=minio
+      - MINIO_PORT=9000
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - MINIO_BUCKET=${MINIO_BUCKET:-documents}
+      - MINIO_SECURE=false
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-01}
+      - AZURE_EMBEDDING_DEPLOYMENT=${AZURE_EMBEDDING_DEPLOYMENT:-text-embedding-3-large}
+      - DEFAULT_CHUNK_SIZE=${DEFAULT_CHUNK_SIZE:-500}
+      - DEFAULT_CHUNK_OVERLAP=${DEFAULT_CHUNK_OVERLAP:-50}
+      - EMBEDDING_BATCH_SIZE=20
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
     restart: unless-stopped
     networks:
       - rag-network
@@ -156,7 +264,7 @@ services:
       postgres:
         condition: service_healthy
       qdrant:
-        condition: service_healthy
+        condition: service_started
       rabbitmq:
         condition: service_healthy
     restart: unless-stopped
@@ -167,9 +275,9 @@ services:
     build: ./frontend
     container_name: rag-frontend
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8001
     ports:
-      - "3000:3000"
+      - "3100:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -181,6 +289,7 @@ volumes:
   qdrant_data:
   rabbitmq_data:
   upload_data:
+  minio_data:
 
 networks:
   rag-network:

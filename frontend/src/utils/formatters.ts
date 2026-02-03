@@ -92,3 +92,29 @@ export function getFileExtension(filename: string): string {
 export function formatStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
 }
+
+/**
+ * Format processing time in seconds to human-readable format
+ */
+export function formatProcessingTime(seconds: number | null): string {
+  if (!seconds) return '--';
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  if (seconds < 3600) return `${(seconds / 60).toFixed(1)}m`;
+  return `${(seconds / 3600).toFixed(1)}h`;
+}
+
+/**
+ * Calculate progress percentage based on document status and counts
+ */
+export function calculateDocumentProgress(status: string, chunkCount: number, vectorCount: number): number {
+  if (status === 'completed') return 100;
+  if (status === 'failed') return 0;
+  if (status === 'pending') return 5;
+  if (status === 'processing') {
+    // Estimate progress based on chunk and vector count
+    if (chunkCount === 0) return 10;
+    if (vectorCount === 0) return 40;
+    return 75;
+  }
+  return 0;
+}

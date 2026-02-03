@@ -18,11 +18,15 @@ EMBEDDING_SIZE = 3072
 MAX_FILE_SIZE_MB = 100
 ALLOWED_MIME_TYPES = [
     "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/msword",  # .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",  # .pptx
     "image/png",
     "image/jpeg",
-    "text/plain"
+    "text/plain",  # .txt
+    "text/markdown",  # .md
+    "application/json",  # .json
+    "application/octet-stream"  # Fallback for files with unknown MIME type
 ]
 
 # Processing

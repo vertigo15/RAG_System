@@ -1,7 +1,7 @@
-﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings } from '../types';
 import { useToast } from './useToast';
-import api from '../services/api';
+import { settingsApi, healthApi } from '../services/api';
 
 export function useSettings() {
   const queryClient = useQueryClient();
@@ -10,14 +10,14 @@ export function useSettings() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['settings'],
     queryFn: async () => {
-      const response = await api.get('/settings');
+      const response = await settingsApi.get();
       return response.data;
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (newSettings: Partial<Settings>) => 
-      api.put('/settings', newSettings),
+      settingsApi.update(newSettings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
       toast.success('Settings updated');
@@ -30,7 +30,7 @@ export function useSettings() {
   const { data: health } = useQuery({
     queryKey: ['health'],
     queryFn: async () => {
-      const response = await api.get('/health');
+      const response = await healthApi.getStatus();
       return response.data;
     },
     refetchInterval: 30000,
