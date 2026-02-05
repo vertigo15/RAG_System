@@ -32,6 +32,7 @@ class DocumentResponse(BaseModel):
     chunk_count: int
     vector_count: int
     qa_pairs_count: int
+    primary_language: Optional[str] = None  # Primary detected language (e.g., 'en', 'he')
     detected_languages: Optional[List[str]]
     summary: Optional[str]
     tags: Optional[List[str]]
@@ -107,6 +108,16 @@ class SettingsUpdate(BaseModel):
     chunk_overlap: Optional[int] = Field(None, ge=0, le=500)
     enable_hybrid_search: Optional[bool] = None
     enable_qa_matching: Optional[bool] = None
+    
+    # Chunking Configuration (new fields)
+    semantic_overlap_enabled: Optional[bool] = None
+    semantic_overlap_tokens: Optional[int] = Field(None, ge=10, le=200)
+    parent_chunk_multiplier: Optional[float] = Field(None, ge=1.5, le=4.0)
+    use_llm_for_parent_summary: Optional[bool] = None
+    parent_summary_max_length: Optional[int] = Field(None, ge=100, le=500)
+    hierarchical_threshold_chars: Optional[int] = Field(None, ge=20000, le=200000)
+    semantic_threshold_chars: Optional[int] = Field(None, ge=5000, le=50000)
+    min_headers_for_semantic: Optional[int] = Field(None, ge=1, le=10)
 
 
 class SettingsResponse(BaseModel):
@@ -124,6 +135,16 @@ class SettingsResponse(BaseModel):
     chunk_overlap: int
     enable_hybrid_search: bool = True
     enable_qa_matching: bool = True
+    
+    # Chunking Configuration (new fields)
+    semantic_overlap_enabled: bool = True
+    semantic_overlap_tokens: int = 50
+    parent_chunk_multiplier: float = 2.0
+    use_llm_for_parent_summary: bool = False
+    parent_summary_max_length: int = 300
+    hierarchical_threshold_chars: int = 60000
+    semantic_threshold_chars: int = 12000
+    min_headers_for_semantic: int = 3
 
 
 # Health check schemas

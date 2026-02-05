@@ -17,6 +17,7 @@ from storage.minio_storage import create_minio_storage
 from storage.qdrant_client import QdrantClient
 from pipeline.chunker import Chunker
 from pipeline.embedder import Embedder
+from pipeline.models.config import ChunkingConfig
 
 # Configure logging
 logging.basicConfig(
@@ -47,7 +48,7 @@ class ChunkingService:
         )
         
         # Pipeline components
-        self.chunker = Chunker()
+        self.chunker = Chunker()  # Default config, will be updated per-message
         self.embedder = Embedder(
             endpoint=settings.azure_openai_endpoint,
             api_key=settings.azure_openai_api_key,
@@ -83,7 +84,20 @@ class ChunkingService:
         chunk_size = message.get("chunk_size", settings.default_chunk_size)
         chunk_overlap = message.get("chunk_overlap", settings.default_chunk_overlap)
         
+        # Create ChunkingConfig from message parameters
+        config = ChunkingConfig.from_message(message)
+        config.chunk_size = chunk_size
+        config.chunk_overlap = chunk_overlap
+        
+        # Update chunker with new config
+        self.chunker.update_config(config)
+        
         logger.info(f"Processing document: {doc_id}")
+        logger.info(
+            f"Chunking config: strategy={chunking_strategy}, "
+            f"chunk_size={chunk_size}, overlap={chunk_overlap}, "
+            f"semantic_overlap_enabled={config.semantic_overlap_enabled}"
+        )
         
         try:
             # Update status

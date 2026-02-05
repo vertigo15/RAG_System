@@ -31,7 +31,16 @@ class SettingsService:
             default_rerank_top=all_settings.get("default_rerank_top", 5),
             max_agent_iterations=all_settings.get("max_agent_iterations", 3),
             chunk_size=all_settings.get("chunk_size", 512),
-            chunk_overlap=all_settings.get("chunk_overlap", 50)
+            chunk_overlap=all_settings.get("chunk_overlap", 50),
+            # Chunking Configuration (new fields)
+            semantic_overlap_enabled=all_settings.get("semantic_overlap_enabled", True),
+            semantic_overlap_tokens=all_settings.get("semantic_overlap_tokens", 50),
+            parent_chunk_multiplier=all_settings.get("parent_chunk_multiplier", 2.0),
+            use_llm_for_parent_summary=all_settings.get("use_llm_for_parent_summary", False),
+            parent_summary_max_length=all_settings.get("parent_summary_max_length", 300),
+            hierarchical_threshold_chars=all_settings.get("hierarchical_threshold_chars", 60000),
+            semantic_threshold_chars=all_settings.get("semantic_threshold_chars", 12000),
+            min_headers_for_semantic=all_settings.get("min_headers_for_semantic", 3)
         )
     
     async def update_settings(self, settings_update: SettingsUpdate) -> SettingsResponse:

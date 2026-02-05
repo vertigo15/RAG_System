@@ -125,6 +125,16 @@ export interface Settings {
   agent_max_iterations: number;
   enable_hybrid_search?: boolean;
   enable_qa_matching?: boolean;
+  
+  // Chunking Configuration (new fields)
+  semantic_overlap_enabled?: boolean;
+  semantic_overlap_tokens?: number;
+  parent_chunk_multiplier?: number;
+  use_llm_for_parent_summary?: boolean;
+  parent_summary_max_length?: number;
+  hierarchical_threshold_chars?: number;
+  semantic_threshold_chars?: number;
+  min_headers_for_semantic?: number;
 }
 
 export interface HealthStatus {
